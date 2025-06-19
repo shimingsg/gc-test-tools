@@ -164,7 +164,7 @@ def __run_gc_individual_tests(repo_root: str, verbose: bool = True) -> None:
                 os.environ['RunningGCSimulatorTests'] = '1'
             else:
                 # os.environ['RunningGCSimulatorTests'] = ''
-                os.environ.pop('RunningGCSimulatorTests')
+                os.environ.pop('RunningGCSimulatorTests', None)
             
             cmdline = [test[1], '-coreroot', coreroot]
             print(f'Running command: {cmdline}')
