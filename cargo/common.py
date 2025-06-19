@@ -173,3 +173,21 @@ class RunCommand:
                 returncode, quoted_cmdline)
         
         return returncode
+    
+    def run_and_get_output(self, working_directory: Optional[str] = None) -> str:
+        '''
+        Executes specified shell command and returns its output.
+        '''
+        retrycount = 0
+        (returncode, quoted_cmdline) = self.__runinternal(working_directory)
+        while returncode not in self.success_exit_codes and self.__retry != 0 and retrycount < self.__retry:
+            (returncode, _) = self.__runinternal(working_directory)
+            retrycount += 1
+
+        if returncode not in self.success_exit_codes:
+            getLogger().error(
+                "Process exited with status %s", returncode)
+            raise CalledProcessError(
+                returncode, quoted_cmdline)
+
+        return self.stdout

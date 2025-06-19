@@ -92,6 +92,16 @@ def __process_args(args: List[str]) -> Any:
     
     return parser.parse_args(args)
 
+def __get_commit_hash(repo_root: str, verbose: bool = True) -> str:
+    '''Gets the latest commit hash from the runtime repository.
+    This function changes the current working directory to the repository root and runs the git log command.
+    param repo_root: The root directory of the runtime repository.
+    param verbose: If True, prints the command lines being executed.
+    return: The latest commit hash as a string.
+    '''
+    cmdline = ['git', 'log', '-1', '--pretty=format:%H']
+    return RunCommand(cmdline=cmdline, verbose=verbose).run_and_get_output(repo_root)
+    
 def __get_repo_update(repo_root: str, verbose: bool = True) -> None:
     '''Updates the runtime repository by pulling the latest changes from the remote repository.
     This function changes the current working directory to the repository root and runs the git pull command.
@@ -222,7 +232,9 @@ def __summary(repo_root: str, verbose: bool = True) -> None:
     param verbose: If True, prints the command lines being executed.
     '''
     print('Generating summary of test results...')
-    markdown_output = "# Test Result:\n\n| Testset name | Number of tests | Passed | Failed |\n|--------------|-------|-------|-------|\n"
+    commit_hash = __get_commit_hash(repo_root, verbose=verbose)
+    markdown_output = f'# GC Individual Tests Summary\n\nCommit Hash: {commit_hash}\n\n'
+    markdown_output += "# Test Result:\n\n| Testset name | Number of tests | Passed | Failed |\n|--------------|-------|-------|-------|\n"
     markdown_output_failed_test = "# Failed tests:\n\n| Test name | Reproducible |\n|-----------|--------------|\n"
     with push_dir(repo_root):
         for result in TEST_RESULTS:
