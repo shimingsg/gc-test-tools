@@ -11,11 +11,11 @@ python run.py --help
 ```
 
 ## what the script does:
-- git pull to get lastest code from dotnet/runtime repo
-- build clr + libs + test layout
-- build gc individual tests
-- run tests
-- summary
+- [x] git pull to get lastest code from dotnet/runtime repo
+- [x] build clr + libs + test layout
+- [x] build gc individual tests
+- [x] run tests
+- [x] summary
 
 ## TO DO
 - [x] worflow
