@@ -1,9 +1,8 @@
 from contextlib import contextmanager
 from logging import getLogger
-from platform import machine
 from stat import S_IWRITE
 from shutil import rmtree
-from typing import Callable, List, Optional, Tuple
+from typing import List, Optional, Tuple
 from subprocess import CalledProcessError
 from subprocess import list2cmdline
 from subprocess import PIPE, STDOUT, DEVNULL
@@ -13,20 +12,6 @@ from io import StringIO
 import os
 import sys
 
-def get_machine_architecture():
-    machineArch = machine().lower()
-    # values taken from https://stackoverflow.com/a/45125525/5852046
-    if machineArch == 'amd64' or machineArch == 'x86_64' or machineArch == 'x64':
-        return 'x64'
-    elif machineArch == 'arm64' or machineArch == 'aarch64' or machineArch == 'aarch64_be' or machineArch == 'armv8b' or machineArch == 'armv8l':
-        return 'arm64'
-    elif machineArch == 'arm32' or machineArch == 'aarch32' or machineArch == 'arm':
-        return 'arm'
-    elif machineArch == 'i386' or machineArch == 'i486' or machineArch == 'i686':
-        return 'x86'
-    else:
-        return 'x64' # Default architecture
-    
 def get_python_executable() -> str:
     '''
     Gets the absolute path of the executable binary for the Python interpreter.
@@ -148,9 +133,6 @@ class RunCommand:
         with push_dir(working_directory):
             quoted_cmdline = '$ '
             quoted_cmdline += list2cmdline(self.cmdline)
-
-            # if '-AzureFeed' in self.cmdline or '-FeedCredential' in self.cmdline:
-            #     quoted_cmdline = "<dotnet-install command contains secrets, skipping log>"
 
             getLogger().info(quoted_cmdline)
 

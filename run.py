@@ -9,9 +9,12 @@ from individual.common import parse_test_results,generate_test_result_file_name
 import os
 
 def __process_args(args: List[str]) -> Any:
-    '''Processes command-line arguments and returns the first argument.'''
-    if not args:
-        raise ValueError('No arguments provided.')
+    '''Processes command line arguments and returns parsed arguments.
+    param args: List of command line arguments.
+    return: Parsed arguments as an object.
+    Raises ValueError if no arguments are provided.'''
+    if not args or len(args) == 0:
+        raise ValueError('No arguments provided. Please provide the required arguments.')
     
     parser = ArgumentParser(
         description='GC Individual Tests warpper',
@@ -90,15 +93,25 @@ def __process_args(args: List[str]) -> Any:
     return parser.parse_args(args)
 
 def __get_repo_update(repo_root: str, verbose: bool = True) -> None:
+    '''Updates the runtime repository by pulling the latest changes from the remote repository.
+    This function changes the current working directory to the repository root and runs the git pull command.
+    param repo_root: The root directory of the runtime repository.
+    param verbose: If True, prints the command lines being executed.
+    '''
     cmdlines = [
         ['git', 'pull'],
-        ['git', 'log', '-1', '--pretty=format:%H']
+        # ['git', 'log', '-1', '--pretty=format:%H']
     ]
     with push_dir(repo_root):
         for cmdline in cmdlines:
             RunCommand(cmdline, verbose=verbose).run()
 
 def __build_clr_libs(repo_root: str, verbose: bool = True) -> None:
+    '''Builds the CLR and libraries in Release and Checked mode.
+    This function builds the CLR and libraries using the provided command lines.
+    param repo_root: The root directory of the runtime repository.
+    param verbose: If True, prints the command lines being executed.
+    '''
     cmdlines =[
         ['build.cmd', '-s', 'clr+libs', '-c', 'Release', '-rc', 'Checked'],
         [rf'src\tests\build.cmd', 'generatelayoutonly', 'Checked']
@@ -108,6 +121,11 @@ def __build_clr_libs(repo_root: str, verbose: bool = True) -> None:
             RunCommand(cmdline, verbose=verbose).run()
 
 def __build_gc_individual_tests(repo_root: str, verbose: bool = True) -> None:
+    '''Builds the GC Individual Tests.
+    This function builds the individual test projects specified in the `individual_test_projects` list.
+    param repo_root: The root directory of the runtime repository.
+    param verbose: If True, prints the command lines being executed.
+    '''
     build_tool = rf'.dotnet\dotnet.exe'
     individual_test_projects = [
         r'src\tests\GC\GC.csproj', 
@@ -122,9 +140,22 @@ def __build_gc_individual_tests(repo_root: str, verbose: bool = True) -> None:
         print('GC Individual Tests built successfully.')    
 
 def __run_gc_individual_tests(repo_root: str, verbose: bool = True) -> None:
+    '''Runs the GC Individual Tests.
+    This function assumes that the tests are built and available in the specified directory.
+    param repo_root: The root directory of the runtime repository.
+    param verbose: If True, prints the command lines being executed.
+    '''
     coreroot = rf'{repo_root}\{CLR_BINARIES_ROOT}\Tests\Core_Root'
     with push_dir(repo_root):
         for test in INDIVIDUAL_TESTS:
+            if test[0] == 'GC-simulator':
+                # For GC-simulator, we need to set the environment variable
+                # RunningGCSimulatorTests to 1 to run the simulator tests.
+                os.environ['RunningGCSimulatorTests'] = '1'
+            else:
+                # os.environ['RunningGCSimulatorTests'] = ''
+                os.environ.pop('RunningGCSimulatorTests')
+            
             cmdline = [test[1], '-coreroot', coreroot]
             print(f'Running command: {cmdline}')
             RunCommand(cmdline, verbose=True).run()
@@ -186,7 +217,10 @@ def __analyze_test_results(test_result: str) -> dict:
     return test_summary
 
 def __summary(repo_root: str, verbose: bool = True) -> None:
-    '''Prints a summary of the test results.'''
+    '''Generates a summary of the test results and writes it to a Markdown file.
+    param repo_root: The root directory of the runtime repository.
+    param verbose: If True, prints the command lines being executed.
+    '''
     print('Generating summary of test results...')
     markdown_output = "# Test Result:\n\n| Testset name | Number of tests | Passed | Failed |\n|--------------|-------|-------|-------|\n"
     markdown_output_failed_test = "# Failed tests:\n\n| Test name | Reproducible |\n|-----------|--------------|\n"
@@ -218,6 +252,13 @@ def __summary(repo_root: str, verbose: bool = True) -> None:
     print(f'Summary of test results saved to {output_file}')
 
 def __main(argv: List[str]) -> None:
+    '''Main function to run the GC Individual Tests wrapper.
+    param argv: List of command line arguments.
+    This function processes the command line arguments, sets up loggers, and calls the appropriate functions
+    to update the repository, build CLR libraries, build tests, and run tests.
+    It also generates a summary of the test results.
+    Raises ValueError if no arguments are provided.
+    '''
     args = __process_args(argv)
     setup_loggers(verbose=args.verbose)
     

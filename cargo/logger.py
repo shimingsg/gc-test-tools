@@ -1,7 +1,3 @@
-'''
-Support module around logging functionality for the performance scripts.
-'''
-
 from datetime import datetime
 from logging import FileHandler, Formatter, StreamHandler
 from logging import getLogger
@@ -16,12 +12,8 @@ from .common import get_root_path
 class LoggerStateManager:
     def __init__(self):
         self.logger_initialized = False
-        # self.logger_opentelemetry_imported = False
-
     def set_initialized(self, value: bool): self.logger_initialized = value
-    # def set_opentelemetry_imported(self, value: bool): self.logger_opentelemetry_imported = value
     def get_initialized(self) -> bool: return self.logger_initialized
-    # def get_opentelemetry_imported(self) -> bool: return self.logger_opentelemetry_imported
 
 logger_state_manager = LoggerStateManager()
 def setup_loggers(verbose: bool):
