@@ -191,6 +191,10 @@ def __summary(repo_root: str, verbose: bool = True) -> None:
     markdown_output_failed_test = "# Failed tests:\n\n| Test name | Reproducible |\n|-----------|--------------|\n"
     with push_dir(repo_root):
         for result in TEST_RESULTS:
+            if not os.path.exists(TEST_RESULTS[result]):
+                print(f'Test result file {TEST_RESULTS[result]} does not exist.')
+                markdown_output += f"| {result} | NA | NA | NA |\n"
+                continue
             test_summary = parse_test_results(TEST_RESULTS[result])
             if not test_summary:
                 print(f'No test results found in {test_summary}')
