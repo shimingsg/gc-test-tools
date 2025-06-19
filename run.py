@@ -123,10 +123,11 @@ def __build_gc_individual_tests(repo_root: str, verbose: bool = True) -> None:
 
 def __run_gc_individual_tests(repo_root: str, verbose: bool = True) -> None:
     coreroot = rf'{repo_root}\{CLR_BINARIES_ROOT}\Tests\Core_Root'
-    for test in INDIVIDUAL_TESTS:
-        cmdline = [test[1], '-coreroot', coreroot]
-        print(f'Running command: {cmdline}')
-        RunCommand(cmdline, verbose=True).run()
+    with push_dir(repo_root):
+        for test in INDIVIDUAL_TESTS:
+            cmdline = [test[1], '-coreroot', coreroot]
+            print(f'Running command: {cmdline}')
+            RunCommand(cmdline, verbose=True).run()
         
 # def __rerun_failed_tests(repo_root: str, run_name: str, coreroot: str, verbose: bool = True) -> None:
 
